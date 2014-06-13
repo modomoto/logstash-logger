@@ -2,12 +2,11 @@
 [![Build Status](https://travis-ci.org/dwbutler/logstash-logger.png?branch=master)](https://travis-ci.org/dwbutler/logstash-logger) [![Code Climate](https://codeclimate.com/github/dwbutler/logstash-logger.png)](https://codeclimate.com/github/dwbutler/logstash-logger)
 
 This gem implements a subclass of Ruby's Logger class that logs directly to [logstash](http://logstash.net).
-It writes to a logstash listener over a UDP (default) or TCP connection, in logstash JSON format. This is an improvement over
-writing to a file or syslog since logstash can receive the structured data directly.
+It writes to a logstash listener over a UDP (default), TCP connection or file log, in logstash JSON format. This is an improvement over writing to a file or syslog since logstash can receive the structured data directly.
 
 ## Features
 
-* Writes directly to logstash over a UDP or TCP connection.
+* Writes directly to logstash over a UDP or TCP connection or from a file log.
 * Always writes in logstash JSON format.
 * Logger can take a string message, a hash, a LogStash::Event, or a logstash-formatted json string as input.
 * Events are automatically populated with message, timestamp, host, and severity.
@@ -40,9 +39,10 @@ logger.info 'test'
 # Writes the following to UDP port 5228:
 # {"@source":"server-host-name","@tags":[],"@fields":{"severity":"INFO"},"@message":"test","@timestamp":"2013-04-08T18:56:23.767273+00:00"}
 
-# Specify UDP or TCP explicitly
+# Specify UDP, TCP or File-log explicitly
 udp_logger = LogStashLogger.new('localhost', 5228, :udp)
 tcp_logger = LogStashLogger.new('localhost', 5229, :tcp)
+file_logger = LogStashFileLogger.new('log/logstash.log')
 ```
 
 ## Logstash configuration
@@ -77,13 +77,15 @@ To get Rails to nicely output its logs in structured logstash format, try one of
 Currently these gems output a JSON string, which LogStashLogger then parses.
 Future versions of these gems could potentially have deeper integration with LogStashLogger (i.e. by writing LogStash::Event objects).
 
-## UDP vs TCP
-Should you write to a UDP or TCP listener? It depends on your specific needs, but most applications should use the default (UDP).
+## UDP vs TCP vs File
+Should you write to a UDP-, TCP-listener or use file based logs? It depends on your specific needs, but most applications should use the default (UDP).
 
 * UDP is faster because it's asynchronous (fire-and-forget). However, this means that log messages could get dropped. This is okay for most applications.
 * TCP verifies that every message has been received via two-way communication . This could slow your app down to a crawl if the TCP listener is under heavy load.
 
 For a more detailed discussion of UDP vs TCP, I recommend reading this article: [UDP vs. TCP](http://gafferongames.com/networking-for-game-programmers/udp-vs-tcp/)
+
+File-logs can be used analog to the default Logger-class in Ruby.
 
 ## Ruby compatibility
 
